@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: url-shortner Quarkus Lambda HTTP (local)
+
+Resources:
+  UrlShortnerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: url-shortner-local
+      CodeUri: target/function.zip
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+      Runtime: provided.al2
+      MemorySize: 512
+      Timeout: 15
+      Environment:
+        Variables:
+          QUARKUS_PROFILE: lambda
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
