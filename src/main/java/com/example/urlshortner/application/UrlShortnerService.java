@@ -21,7 +21,11 @@ public class UrlShortnerService {
         return Base62IdCodec.encode(id);
     }
 
-    public String createShortenedUrl(String userId,String originalUrl) {
+    public UrlMapping getByAlias(String alias) {
+        return urlShortnerRepository.getByAlias(alias);
+    }
+
+    public UrlMapping createShortenedUrl(String userId,String originalUrl) {
         String alias = createUniqueAlias();
         UrlMapping urlMapping=new UrlMapping();
         urlMapping.setOriginalUrl(originalUrl);
@@ -31,6 +35,6 @@ public class UrlShortnerService {
         urlMapping.setAlias(alias);
         urlMapping.setEnable(true);
         urlShortnerRepository.save(urlMapping);
-        return alias;
+        return urlMapping;
     }
 }

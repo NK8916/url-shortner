@@ -65,7 +65,7 @@ public class UrlShortnerRepository {
         table.putItem(entity);
     }
 
-    public UrlMapping findByAlias(String alias) {
+    public UrlMapping getByAlias(String alias) {
         UrlMappingEntity entity = table.getItem(r -> r.key(k -> k.partitionValue(alias)));
         if (entity == null) return null;
 
