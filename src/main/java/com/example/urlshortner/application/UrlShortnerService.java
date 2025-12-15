@@ -11,7 +11,7 @@ public class UrlShortnerService {
     private final UrlShortnerRepository urlShortnerRepository;
     private final GlobalCounter globalCounter;
 
-    public UrlShortnerService(UrlShortnerRepository urlShortnerRepository, GlobalCounter globalCounter, Base62IdCodec base62IdCodec) {
+    public UrlShortnerService(UrlShortnerRepository urlShortnerRepository, GlobalCounter globalCounter) {
         this.urlShortnerRepository = urlShortnerRepository;
         this.globalCounter = globalCounter;
     }

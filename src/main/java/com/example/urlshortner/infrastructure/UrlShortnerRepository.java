@@ -8,35 +8,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
-@DynamoDbBean
-class UrlMappingEntity {
-    private String alias;
-    private String userId;
-    private String originalUrl;
-    private Boolean enable;
-    private Long createdAt;
-    private Long updatedAt;
-
-    @DynamoDbPartitionKey
-    public String getAlias() { return alias; }
-    public void setAlias(String alias) { this.alias = alias; }
-
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-
-    public String getOriginalUrl() { return originalUrl; }
-    public void setOriginalUrl(String originalUrl) { this.originalUrl = originalUrl; }
-
-    public Boolean getEnable() { return enable; }
-    public void setEnable(Boolean enable) { this.enable = enable; }
-
-    public Long getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
-
-    public Long getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Long updatedAt) { this.updatedAt = updatedAt; }
-}
-
+@ApplicationScoped
 public class UrlShortnerRepository {
     private static final String TABLE_NAME = "url_shortner";
 
@@ -68,7 +40,6 @@ public class UrlShortnerRepository {
     public UrlMapping getByAlias(String alias) {
         UrlMappingEntity entity = table.getItem(r -> r.key(k -> k.partitionValue(alias)));
         if (entity == null) return null;
-
         UrlMapping m = new UrlMapping();
         m.setAlias(entity.getAlias());
         m.setUserId(entity.getUserId());

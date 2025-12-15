@@ -8,8 +8,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/shorten")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
 public class UrlShortnerResource {
     @Inject
     UrlShortnerService service;
@@ -25,7 +23,10 @@ public class UrlShortnerResource {
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response shorten(UrlShortenRequest req) {
+        System.out.println("Received originalUrl: " + req.originalUrl);
         if (req == null || req.originalUrl == null || req.originalUrl.isBlank()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("originalUrl is required")
@@ -35,6 +36,7 @@ public class UrlShortnerResource {
 
         UrlShortenResponse resp = new UrlShortenResponse();
         resp.alias = mapping.getAlias();
+        System.out.println("alias: " + resp.alias);
         resp.originalUrl = mapping.getOriginalUrl();
         return Response.ok(resp).build();
     }
