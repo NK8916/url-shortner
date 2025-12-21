@@ -1,62 +1,91 @@
-# url-shortner
+## Local Dev Setup — DynamoDB Local (Persistent) + SAM Local on `samnet`
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+---
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+### 1) Start DynamoDB Local (persistent)
 
-## Running the application in dev mode
+```bash
+docker rm -f dynamodb-local 2>/dev/null || true
 
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./mvnw quarkus:dev
+docker run -d --name dynamodb-local \
+  --network samnet \
+  -p 18001:8000 \
+  -v dynamodb_data:/home/dynamodblocal/data \
+  amazon/dynamodb-local \
+  -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+### 2) Create tables + seed counter (idempotent)
 
-## Packaging and running the application
+Creates:
 
-The application can be packaged using:
+- `global_counter` (partition key: `name` string)
+  - Seeds item: `name=url_id_counter`, `value=0`
+- `url_mapping` (partition key: `alias` string)
 
-```shell script
-./mvnw package
+```bash
+docker run --rm --network samnet \
+  --entrypoint sh \
+  -e AWS_ACCESS_KEY_ID=dummy \
+  -e AWS_SECRET_ACCESS_KEY=dummy \
+  -e AWS_REGION=us-east-1 \
+  amazon/aws-cli -lc '
+set -e
+
+echo "Waiting for DynamoDB Local..."
+until aws dynamodb list-tables --endpoint-url http://dynamodb-local:8000 --region us-east-1 >/dev/null 2>&1; do
+  sleep 1
+done
+echo "DynamoDB Local is up."
+
+echo "Creating global_counter (ignore if exists)..."
+aws dynamodb create-table \
+  --table-name global_counter \
+  --attribute-definitions AttributeName=name,AttributeType=S \
+  --key-schema AttributeName=name,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST \
+  --endpoint-url http://dynamodb-local:8000 \
+  --region us-east-1 || true
+
+echo "Seeding url_id_counter (ignore if exists)..."
+aws dynamodb put-item \
+  --table-name global_counter \
+  --item "{\"name\":{\"S\":\"url_id_counter\"},\"value\":{\"N\":\"0\"}}" \
+  --endpoint-url http://dynamodb-local:8000 \
+  --region us-east-1 || true
+
+echo "Creating url_mapping (ignore if exists)..."
+aws dynamodb create-table \
+  --table-name url_mapping \
+  --attribute-definitions AttributeName=alias,AttributeType=S \
+  --key-schema AttributeName=alias,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST \
+  --endpoint-url http://dynamodb-local:8000 \
+  --region us-east-1 || true
+
+echo "Tables:"
+aws dynamodb list-tables --endpoint-url http://dynamodb-local:8000 --region us-east-1
+'
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+### 3) Verify tables (from host)
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+If you have AWS CLI installed on your Mac:
 
-If you want to build an _über-jar_, execute the following command:
+```bash
+export AWS_ACCESS_KEY_ID=dummy
+export AWS_SECRET_ACCESS_KEY=dummy
+export AWS_REGION=us-east-1
+export AWS_EC2_METADATA_DISABLED=true
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+aws dynamodb list-tables \
+  --endpoint-url http://localhost:18001 \
+  --region us-east-1
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### 4) Start SAM Local API on samnet
 
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
+```bash
+sam local start-api --docker-network samnet --debug
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/url-shortner-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Provided Code
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

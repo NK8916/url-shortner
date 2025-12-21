@@ -24,11 +24,21 @@ Resources:
           AWS_ACCESS_KEY_ID: "dummy"
           AWS_SECRET_ACCESS_KEY: "dummy"
       Events:
-        HttpApiEvent:
+        ShortenResolve:
+          Type: HttpApi
+          Properties:
+            Path: /shorten/{alias}
+            Method: GET
+        ShortenCreate:
           Type: HttpApi
           Properties:
             Path: /shorten
             Method: POST
+        Redirect:
+          Type: HttpApi
+          Properties:
+            Path: /{alias}
+            Method: GET
 
 Outputs:
   UrlShortnerApi:
