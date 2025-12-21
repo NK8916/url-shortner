@@ -6,6 +6,8 @@ import com.example.urlshortner.infrastructure.UrlShortnerRepository;
 import com.example.urlshortner.utils.Base62IdCodec;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.logging.Logger;
+
 @ApplicationScoped
 public class UrlShortnerService {
     private final UrlShortnerRepository urlShortnerRepository;
@@ -17,7 +19,9 @@ public class UrlShortnerService {
     }
 
     private String createUniqueAlias() {
+        Logger.getLogger("UrlShortnerService").info("Generating unique alias using global counter");
         long id = globalCounter.nextId();
+        Logger.getLogger("UrlShortnerService").info("Generated unique ID: " + id + " from global counter");
         return Base62IdCodec.encode(id);
     }
 
@@ -26,7 +30,9 @@ public class UrlShortnerService {
     }
 
     public UrlMapping createShortenedUrl(String userId,String originalUrl) {
+        Logger.getLogger("UrlShortnerService").info("Creating shortened URL for originalUrl: " + originalUrl);
         String alias = createUniqueAlias();
+        Logger.getLogger("UrlShortnerService").info("Generated alias: " + alias + " for originalUrl: " + originalUrl);
         UrlMapping urlMapping=new UrlMapping();
         urlMapping.setOriginalUrl(originalUrl);
         urlMapping.setUserId(userId);
@@ -34,6 +40,7 @@ public class UrlShortnerService {
         urlMapping.setUpdatedAt(System.currentTimeMillis());
         urlMapping.setAlias(alias);
         urlMapping.setEnable(true);
+        Logger.getLogger("UrlShortnerService").info("Generated alias: " + urlMapping.getAlias() + " for originalUrl: " + originalUrl);
         urlShortnerRepository.save(urlMapping);
         return urlMapping;
     }

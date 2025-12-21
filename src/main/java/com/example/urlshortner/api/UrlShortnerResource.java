@@ -7,6 +7,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+
 @Path("/shorten")
 public class UrlShortnerResource {
     @Inject
@@ -33,7 +34,7 @@ public class UrlShortnerResource {
                     .build();
         }
         UrlMapping mapping = service.createShortenedUrl(req.userId, req.originalUrl);
-
+        System.out.println("Created mapping: alias=" + mapping.getAlias() + ", originalUrl=" + mapping.getOriginalUrl());
         UrlShortenResponse resp = new UrlShortenResponse();
         resp.alias = mapping.getAlias();
         System.out.println("alias: " + resp.alias);

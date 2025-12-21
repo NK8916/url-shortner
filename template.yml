@@ -14,10 +14,21 @@ Resources:
       Timeout: 15
       Environment:
         Variables:
+          DYNAMO_ENDPOINT: "http://host.docker.internal:18001"
           QUARKUS_PROFILE: lambda
+          QUARKUS_LOG_LEVEL: DEBUG
+          QUARKUS_LOG_CATEGORY__COM_EXAMPLE_URLSHORTNER__LEVEL: DEBUG
+          QUARKUS_LOG_CATEGORY__SOFTWARE_AMAZON_AWSSDK__LEVEL: DEBUG
+          AWS_EC2_METADATA_DISABLED: "true"
+          AWS_REGION: "ap-south-1"
+          AWS_ACCESS_KEY_ID: "dummy"
+          AWS_SECRET_ACCESS_KEY: "dummy"
       Events:
         HttpApiEvent:
           Type: HttpApi
+          Properties:
+            Path: /shorten
+            Method: POST
 
 Outputs:
   UrlShortnerApi:
